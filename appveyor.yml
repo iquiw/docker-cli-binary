@@ -1,0 +1,30 @@
+version: "{build}"
+
+clone_depth: 1
+
+environment:
+  GOPATH: c:\gopath
+
+install:
+  - mkdir %GOPATH%\src\github.com\docker
+  - cd %GOPATH%\src\github.com\docker
+  - git clone --depth 1 -b 18.09 https://github.com/docker/cli.git
+  - set PATH=c:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin;%PATH%;
+  - go version
+  - go env
+
+before_build:
+  - cd cli
+  - ps: $env:VERSION = Get-Content VERSION
+  - ps: $env:GITCOMMIT = git rev-parse --short HEAD
+  - ps: $env:BUILDTIME = Get-Date -Format o
+
+build_script:
+  - cd cmd\docker
+  - >
+    go build -v -tags "autogen"
+    -ldflags "-linkmode=internal
+    -X github.com/docker/cli/cli.Version=%VERSION%
+    -X github.com/docker/cli/cli.GitCommit=%GITCOMMIT%
+    -X github.com/docker/cli/cli.BuildTime=%BUILDTIME%"
+    -o %GOPATH%\src\github.com\docker\cli\build\docker.exe
