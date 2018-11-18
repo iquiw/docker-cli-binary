@@ -29,6 +29,9 @@ build_script:
     -X github.com/docker/cli/cli.BuildTime=%BUILDTIME%"
     -o c:\projects\docker-cli-binary\docker.exe
 
+after_build:
+  - c:\projects\docker-cli-binary\docker.exe --version
+
 artifacts:
   - path: docker.exe
     name: Docker CLI
