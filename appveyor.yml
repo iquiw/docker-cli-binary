@@ -3,12 +3,13 @@ version: "{build}"
 clone_depth: 1
 
 environment:
+  DOCKER_VERSION: v18.09.0
   GOPATH: c:\gopath
 
 install:
   - mkdir %GOPATH%\src\github.com\docker
   - cd %GOPATH%\src\github.com\docker
-  - git clone --depth 1 -b 18.09 https://github.com/docker/cli.git
+  - git clone --depth 1 -b %DOCKER_VERSION% https://github.com/docker/cli.git
   - set PATH=c:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin;%PATH%;
   - go version
   - go env
