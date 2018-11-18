@@ -37,3 +37,13 @@ after_build:
 artifacts:
   - path: docker.exe.7z
     name: Docker CLI
+
+deploy:
+  - provider: GitHub
+    release: $(DOCKER_VERSION)
+    auth_token:
+      secure: Jfjhx7TC03brqWcw+uUMXHJxj445SVeEcmSnDUV10ggRuU6UlzQMLSVGIBRqWD8v
+    artifact: docker.exe.7z
+    on:
+      branch: master
+      appveyor_repo_tag: true
