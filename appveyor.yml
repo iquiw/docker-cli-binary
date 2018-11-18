@@ -31,7 +31,8 @@ build_script:
 
 after_build:
   - c:\projects\docker-cli-binary\docker.exe --version
+  - 7z a c:\projects\docker-cli-binary\docker.exe.7z c:\projects\docker-cli-binary\docker.exe
 
 artifacts:
-  - path: docker.exe
+  - path: docker.exe.7z
     name: Docker CLI
