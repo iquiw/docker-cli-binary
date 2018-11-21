@@ -18,6 +18,7 @@ before_build:
   - cd cli
   - ps: $env:VERSION = "$env:DOCKER_VERSION-ce"
   - ps: $env:GITCOMMIT = git rev-parse --short HEAD
+  - ps: $env:GITCOMMIT_FULL = git rev-parse HEAD
   - ps: $env:BUILDTIME = Get-Date -Format o
 
 build_script:
@@ -33,6 +34,7 @@ build_script:
 after_build:
   - c:\projects\docker-cli-binary\docker.exe --version
   - 7z a c:\projects\docker-cli-binary\docker.exe.7z c:\projects\docker-cli-binary\docker.exe
+  - ps: $env:ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 c:\projects\docker-cli-binary\docker.exe.7z).Hash
 
 artifacts:
   - path: docker.exe.7z
@@ -40,7 +42,15 @@ artifacts:
 
 deploy:
   - provider: GitHub
-    release: $(DOCKER_VERSION)
+    release: $(appveyor_repo_tag_name)
+    description: |
+      Docker CLI binary for Windows 64-bit.
+
+      Built at commit `$(GITCOMMIT_FULL)` of https://github.com/docker/cli.
+
+      | File          | SHA-256 sum |
+      | ---           | ---         |
+      | docker.exe.7z | `$(ARTIFACT_HASH)` |
     auth_token:
       secure: Jfjhx7TC03brqWcw+uUMXHJxj445SVeEcmSnDUV10ggRuU6UlzQMLSVGIBRqWD8v
     artifact: docker.exe.7z
