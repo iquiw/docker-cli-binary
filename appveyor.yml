@@ -16,7 +16,7 @@ install:
 
 before_build:
   - cd cli
-  - ps: $env:VERSION = Get-Content VERSION
+  - ps: $env:VERSION = "$env:DOCKER_VERSION-ce"
   - ps: $env:GITCOMMIT = git rev-parse --short HEAD
   - ps: $env:BUILDTIME = Get-Date -Format o
 
