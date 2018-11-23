@@ -46,7 +46,7 @@ deploy:
     description: |
       Docker CLI binary for Windows 64-bit.
 
-      Built at commit `$(GITCOMMIT_FULL)` of https://github.com/docker/cli.
+      Built https://github.com/docker/cli at commit `$(GITCOMMIT_FULL)`.
 
       | File          | SHA-256 sum |
       | ---           | ---         |
