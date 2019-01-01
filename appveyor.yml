@@ -34,11 +34,15 @@ build_script:
 after_build:
   - c:\projects\docker-cli-binary\docker.exe --version
   - 7z a c:\projects\docker-cli-binary\docker.exe.7z c:\projects\docker-cli-binary\docker.exe
-  - ps: $env:ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 c:\projects\docker-cli-binary\docker.exe.7z).Hash
+  - ps: |
+      $env:ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 c:\projects\docker-cli-binary\docker.exe.7z).Hash
+      $env:ARTIFACT_HASH | Out-File -Encoding utf8 -File c:\projects\docker-cli-binary\docker.exe.7z.sha256
 
 artifacts:
   - path: docker.exe.7z
     name: Docker CLI
+  - path: docker.exe.7z.sha256
+    name: SHA256 hash of Docker CLI
 
 deploy:
   - provider: GitHub
@@ -53,7 +57,7 @@ deploy:
       | docker.exe.7z | `$(ARTIFACT_HASH)` |
     auth_token:
       secure: Jfjhx7TC03brqWcw+uUMXHJxj445SVeEcmSnDUV10ggRuU6UlzQMLSVGIBRqWD8v
-    artifact: docker.exe.7z
+    artifact: docker.exe.7z,docker.exe.7z.sha256
     on:
       branch: master
       appveyor_repo_tag: true
