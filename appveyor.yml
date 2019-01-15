@@ -36,13 +36,13 @@ after_build:
   - 7z a %APPVEYOR_BUILD_FOLDER%\docker-v%DOCKER_VERSION%.7z %APPVEYOR_BUILD_FOLDER%\docker.exe
   - ps: |
       $env:ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 $env:APPVEYOR_BUILD_FOLDER\docker-v$env:DOCKER_VERSION.7z).Hash
-      $env:ARTIFACT_HASH | Out-File -Encoding ascii -File $env:APPVEYOR_BUILD_FOLDER\docker.exe.7z.sha256
+      "$env:ARTIFACT_HASH  docker-v$env:DOCKER_VERSION.7z"| Out-File -Encoding ascii -File $env:APPVEYOR_BUILD_FOLDER\sha256sum.txt
 
 artifacts:
   - path: docker-v$(DOCKER_VERSION).7z
     name: Docker CLI archive
-  - path: docker.exe.7z.sha256
-    name: SHA256 hash of Docker CLI
+  - path: sha256sum.txt
+    name: SHA256 hash of Docker CLI archive
 
 deploy:
   - provider: GitHub
@@ -57,7 +57,7 @@ deploy:
       | docker-v$(DOCKER_VERSION).7z | `$(ARTIFACT_HASH)` |
     auth_token:
       secure: Jfjhx7TC03brqWcw+uUMXHJxj445SVeEcmSnDUV10ggRuU6UlzQMLSVGIBRqWD8v
-    artifact: docker-v$(DOCKER_VERSION).7z,docker.exe.7z.sha256
+    artifact: docker-v$(DOCKER_VERSION).7z,sha256sum.txt
     on:
       branch: master
       appveyor_repo_tag: true
