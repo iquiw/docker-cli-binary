@@ -29,14 +29,14 @@ build_script:
     -X github.com/docker/cli/cli.Version=%VERSION%
     -X github.com/docker/cli/cli.GitCommit=%GITCOMMIT%
     -X github.com/docker/cli/cli.BuildTime=%BUILDTIME%"
-    -o c:\projects\docker-cli-binary\docker.exe
+    -o %APPVEYOR_BUILD_FOLDER%\docker.exe
 
 after_build:
-  - c:\projects\docker-cli-binary\docker.exe --version
-  - 7z a c:\projects\docker-cli-binary\docker.exe.7z c:\projects\docker-cli-binary\docker.exe
+  - "%APPVEYOR_BUILD_FOLDER%\\docker.exe --version"
+  - 7z a %APPVEYOR_BUILD_FOLDER%\docker.exe.7z %APPVEYOR_BUILD_FOLDER%\docker.exe
   - ps: |
-      $env:ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 c:\projects\docker-cli-binary\docker.exe.7z).Hash
-      $env:ARTIFACT_HASH | Out-File -Encoding utf8 -File c:\projects\docker-cli-binary\docker.exe.7z.sha256
+      $env:ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 $env:APPVEYOR_BUILD_FOLDER\docker.exe.7z).Hash
+      $env:ARTIFACT_HASH | Out-File -Encoding ascii -File $env:APPVEYOR_BUILD_FOLDER\docker.exe.7z.sha256
 
 artifacts:
   - path: docker.exe.7z
