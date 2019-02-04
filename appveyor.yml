@@ -2,6 +2,9 @@ version: "{build}"
 
 clone_depth: 1
 
+cache:
+  - '%LocalAppData%\go-build'
+
 environment:
   DOCKER_VERSION: 18.09.1
   GOPATH: c:\gopath
