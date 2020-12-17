@@ -6,7 +6,7 @@ cache:
   - '%LocalAppData%\go-build'
 
 environment:
-  DOCKER_VERSION: 19.03.14
+  DOCKER_VERSION: 20.10.1
   GOPATH: c:\gopath
 
 install:
