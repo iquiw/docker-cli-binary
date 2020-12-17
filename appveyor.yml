@@ -35,7 +35,8 @@ build_script:
     -o %APPVEYOR_BUILD_FOLDER%\docker.exe
 
 after_build:
-  - "%APPVEYOR_BUILD_FOLDER%\\docker.exe --version"
+  # https://github.com/docker/for-win/issues/9770
+  # - "%APPVEYOR_BUILD_FOLDER%\\docker.exe --version"
   - 7z a %APPVEYOR_BUILD_FOLDER%\docker-v%DOCKER_VERSION%.7z %APPVEYOR_BUILD_FOLDER%\docker.exe
   - ps: |
       $env:ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 $env:APPVEYOR_BUILD_FOLDER\docker-v$env:DOCKER_VERSION.7z).Hash
