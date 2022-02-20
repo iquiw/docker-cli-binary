@@ -60,7 +60,7 @@ deploy:
       | ---                          | ---         |
       | docker-v$(DOCKER_VERSION).7z | `$(ARTIFACT_HASH)` |
     auth_token:
-      secure: Jfjhx7TC03brqWcw+uUMXHJxj445SVeEcmSnDUV10ggRuU6UlzQMLSVGIBRqWD8v
+      secure: zzALIvNMMcvFPjqBqI7fzA5lwQnJUl7IReBVeIiiRVtqILjZZIteoOE99FYk/SHd
     artifact: docker-v$(DOCKER_VERSION).7z,sha256sum.txt
     on:
       branch: master
