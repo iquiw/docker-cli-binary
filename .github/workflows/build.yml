@@ -59,7 +59,7 @@ jobs:
         with:
           artifacts: "build/docker-v${{ env.DOCKER_VERSION }}.7z,build/sha256sum.txt"
           artifactContentType: application/octet-stream
-          name: Docker CLI ${{ env.DOCKER_VERSION }}
+          name: Docker CLI v${{ env.DOCKER_VERSION }}
           body: |
             Docker CLI binary for Windows 64-bit.
 
