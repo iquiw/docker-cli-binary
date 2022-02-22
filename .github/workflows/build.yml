@@ -37,8 +37,8 @@ jobs:
           $GITCOMMIT = git rev-parse --short HEAD
           $GITCOMMIT_FULL = git rev-parse HEAD
           $BUILDTIME = Get-Date -Format o
-          go build -v -tags "autogen" `
-              -ldflags "-linkmode=internal `
+          go build -v `
+              -ldflags "-linkmode=external `
               -X github.com/docker/cli/cli/version.Version=$VERSION `
               -X github.com/docker/cli/cli/version.GitCommit=$GITCOMMIT `
               -X github.com/docker/cli/cli/version.BuildTime=$BUILDTIME" `
