@@ -1,0 +1,70 @@
+name: build
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      DOCKER_VERSION: 20.10.12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          repository: docker/cli
+          ref: v${{ env.DOCKER_VERSION }}
+          path: go/src/github.com/docker/cli
+
+      - name: Setup Go compiler
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.17.1'
+
+      - name: Build
+        id: build
+        run: |
+          $env:GOPATH = "$env:GITHUB_WORKSPACE\go"
+          $env:GO111MODULE = "auto"
+          go env
+
+          New-Item -Type Directory build
+          cd go/src/github.com/docker/cli/cmd/docker
+          $VERSION = "$env:DOCKER_VERSION-ce"
+          $GITCOMMIT = git rev-parse --short HEAD
+          $GITCOMMIT_FULL = git rev-parse HEAD
+          $BUILDTIME = Get-Date -Format o
+          go build -v -tags "autogen" `
+              -ldflags "-linkmode=internal `
+              -X github.com/docker/cli/cli/version.Version=$VERSION `
+              -X github.com/docker/cli/cli/version.GitCommit=$GITCOMMIT `
+              -X github.com/docker/cli/cli/version.BuildTime=$BUILDTIME" `
+              -o $env:GITHUB_WORKSPACE\build\docker.exe
+          Write-Output "::set-output name=commit::$GITCOMMIT_FULL"
+
+      - name: Archive
+        id: archive
+        run: |
+          7z a build\docker-v${{ env.DOCKER_VERSION }}.7z build\docker.exe
+          $ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 build\docker-v${{ env.DOCKER_VERSION }}.7z).Hash
+          "$ARTIFACT_HASH  docker-v${{ env.DOCKER_VERSION }}.7z"| Out-File -Encoding ascii -File build\sha256sum.txt
+          Write-Output "::set-output name=hash::$ARTIFACT_HASH"
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/docker-v${{ env.DOCKER_VERSION }}.7z,build/sha256sum.txt"
+          artifactContentType: application/octet-stream
+          name: Docker CLI ${{ env.DOCKER_VERSION }}
+          body: |
+            Docker CLI binary for Windows 64-bit.
+
+            Built https://github.com/docker/cli at commit `${{ steps.build.outputs.commit }}`.
+
+            | File | SHA-256 sum |
+            | ---  | ---         |
+            | docker-v${{ env.DOCKER_VERSION }}.7z | `${{ steps.archive.outputs.hash }}` |
+          token: ${{ secrets.GITHUB_TOKEN }}
