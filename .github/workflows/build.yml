@@ -49,15 +49,15 @@ jobs:
         id: archive
         run: |
           cd build
-          7z a docker-v${{ env.DOCKER_VERSION }}.7z docker.exe
-          $ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 docker-v${{ env.DOCKER_VERSION }}.7z).Hash
-          "$ARTIFACT_HASH  docker-v${{ env.DOCKER_VERSION }}.7z"| Out-File -Encoding ascii -File sha256sum.txt
+          Compress-Archive -Path docker.exe -DestinationPath docker-v${{ env.DOCKER_VERSION }}.zip
+          $ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 docker-v${{ env.DOCKER_VERSION }}.zip).Hash
+          "$ARTIFACT_HASH  docker-v${{ env.DOCKER_VERSION }}.zip"| Out-File -Encoding ascii -File sha256sum.txt
           Write-Output "::set-output name=hash::$ARTIFACT_HASH"
 
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/docker-v${{ env.DOCKER_VERSION }}.7z,build/sha256sum.txt"
+          artifacts: "build/docker-v${{ env.DOCKER_VERSION }}.zip,build/sha256sum.txt"
           artifactContentType: application/octet-stream
           name: Docker CLI v${{ env.DOCKER_VERSION }}
           body: |
@@ -67,5 +67,5 @@ jobs:
 
             | File | SHA-256 sum |
             | ---  | ---         |
-            | docker-v${{ env.DOCKER_VERSION }}.7z | `${{ steps.archive.outputs.hash }}` |
+            | docker-v${{ env.DOCKER_VERSION }}.zip | `${{ steps.archive.outputs.hash }}` |
           token: ${{ secrets.GITHUB_TOKEN }}
