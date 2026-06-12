@@ -5,24 +5,40 @@ on:
     tags:
       - '*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
 jobs:
   build:
+    name: Build Docker binary
     runs-on: windows-latest
+    permissions:
+      contents: write # Create GitHub release
     env:
-      DOCKER_VERSION: 20.10.12
+      DOCKER_VERSION: 29.5.3
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Checkout this repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
+          persist-credentials: false
+
+      - name: Checkout docker/cli repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
           repository: docker/cli
           ref: v${{ env.DOCKER_VERSION }}
           path: go/src/github.com/docker/cli
 
       - name: Setup Go compiler
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
-          go-version: '^1.17.1'
+          go-version: '1.26.4'
+          cache: false
 
       - name: Build
         id: build
@@ -43,29 +59,29 @@ jobs:
               -X github.com/docker/cli/cli/version.GitCommit=$GITCOMMIT `
               -X github.com/docker/cli/cli/version.BuildTime=$BUILDTIME" `
               -o $env:GITHUB_WORKSPACE\build\docker.exe
-          Write-Output "::set-output name=commit::$GITCOMMIT_FULL"
+          "commit=$GITCOMMIT_FULL" >> $env:GITHUB_OUTPUT
 
       - name: Archive
         id: archive
         run: |
           cd build
-          Compress-Archive -Path docker.exe -DestinationPath docker-v${{ env.DOCKER_VERSION }}.zip
-          $ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 docker-v${{ env.DOCKER_VERSION }}.zip).Hash
-          "$ARTIFACT_HASH  docker-v${{ env.DOCKER_VERSION }}.zip"| Out-File -Encoding ascii -File sha256sum.txt
-          Write-Output "::set-output name=hash::$ARTIFACT_HASH"
+          Compress-Archive -Path docker.exe -DestinationPath "docker-v$env:DOCKER_VERSION.zip"
+          $ARTIFACT_HASH = (Get-FileHash -Algorithm SHA256 docker-v$env:DOCKER_VERSION.zip).Hash
+          "$ARTIFACT_HASH  docker-v$env:DOCKER_VERSION.zip"| Out-File -Encoding ascii -File sha256sum.txt
+          "hash=$ARTIFACT_HASH" >> $env:GITHUB_OUTPUT
 
       - name: Create Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build/docker-v${{ env.DOCKER_VERSION }}.zip,build/sha256sum.txt"
-          artifactContentType: application/octet-stream
-          name: Docker CLI v${{ env.DOCKER_VERSION }}
-          body: |
-            Docker CLI binary for Windows 64-bit.
-
-            Built https://github.com/docker/cli at commit `${{ steps.build.outputs.commit }}`.
-
-            | File | SHA-256 sum |
-            | ---  | ---         |
-            | docker-v${{ env.DOCKER_VERSION }}.zip | `${{ steps.archive.outputs.hash }}` |
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v$env:DOCKER_VERSION" `
+              --title "Docker CLI v$env:DOCKER_VERSION" `
+              --notes "Docker CLI binary for Windows 64-bit.`n
+          Built https://github.com/docker/cli at commit ``$env:DOCKER_COMMIT``.`n
+          | File | SHA-256 sum |
+          | ---  | ---         |
+          | docker-v$env:DOCKER_VERSION.zip | ``$env:ARCHIVE_HASH`` |" `
+              "build\docker-v$env:DOCKER_VERSION.zip" `
+              "build\sha256sum.txt"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_COMMIT: ${{ steps.build.outputs.commit }}
+          ARCHIVE_HASH: ${{ steps.archive.outputs.hash }}
