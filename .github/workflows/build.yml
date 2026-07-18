@@ -18,7 +18,7 @@ jobs:
     permissions:
       contents: write # Create GitHub release
     env:
-      DOCKER_VERSION: 29.6.1
+      DOCKER_VERSION: 29.6.2
 
     steps:
       - name: Checkout this repository
@@ -37,7 +37,7 @@ jobs:
       - name: Setup Go compiler
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.4'
+          go-version: '1.26.5'
           cache: false
 
       - name: Build
